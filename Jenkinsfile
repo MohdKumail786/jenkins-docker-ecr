@@ -10,7 +10,8 @@ pipeline {
         registryCredential = 'ecr:us-east-1:awscreds'
         appRegistry = "905418477455.dkr.ecr.us-east-1.amazonaws.com/mkashraf071"
         docker_ecr_registry = "https://905418477455.dkr.ecr.us-east-1.amazonaws.com"
-	docker_hub_repo = "https://hub.docker.com/r/mkashraf071"
+	DOCKERHUB_CREDENTIALS =  credentials('dockerhubcredentials')   
+	
     }
   stages {
     stage('Fetch code'){
@@ -70,17 +71,20 @@ pipeline {
             }
           }
      }
+	  
+    stage('Login to Docker Hub') {         
+      steps{                            
+	sh 'echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'                 
+	echo 'Login Completed'                
+      }           
+    }   
 
-   stage('Upload App Image to Docker Hub Repo') {
-          steps{
-            script {
-              docker.withRegistry( docker_hub_repo, registryCredential ) {
-                dockerImage.push("$BUILD_NUMBER")
-                dockerImage.push('latest')
-              }
-            }
-          }
-     }
+   stage('Push Image to Docker Hub') {         
+    steps{                            
+     sh 'sudo docker push mkashraf071/jenkin-dockerhub:$BUILD_NUMBER'           
+     echo 'Push Image Completed'       
+    }            
+}  
 
   }
 }
