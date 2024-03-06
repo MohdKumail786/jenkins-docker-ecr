@@ -10,13 +10,14 @@ pipeline {
         registryCredential = 'ecr:us-east-1:awscreds'
         appRegistry = "905418477455.dkr.ecr.us-east-1.amazonaws.com/mkashraf071"
         docker_ecr_registry = "https://905418477455.dkr.ecr.us-east-1.amazonaws.com"
-	DOCKERHUB_CREDENTIALS =  credentials('dockerhubcredentials')   
+	docker_hub_regisry = "https://hub.docker.com/repository/docker/mkashraf071/jenkin-dockerhub"
+	docker_hub_creds =  'dockerhubcredentials'   
 	
     }
   stages {
     stage('Fetch code'){
       steps {
-        git branch: 'docker', url: 'https://github.com/MohdKumail786/jenkins-docker-ecr.git'
+        git branch: 'main', url: 'https://github.com/MohdKumail786/jenkins-docker-ecr.git'
       }
     }
 
@@ -61,7 +62,7 @@ pipeline {
     
     }
 
-    stage('Upload App Image') {
+    stage('Upload App Image to ECR') {
           steps{
             script {
               docker.withRegistry( docker_ecr_registry, registryCredential ) {
@@ -72,23 +73,23 @@ pipeline {
           }
      }
 	  
-    stage('Login to Docker Hub') {         
+    stage('Login to Docker Hub and push image') {         
       steps{                            
-	sh 'echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'                 
-	echo 'Login Completed'                
-      }           
-    }   
+	/* sh 'echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'                 
+	echo 'Login Completed'    */
 
-   stage('Push Image to Docker Hub') {         
-    steps{                            
-     sh 'sudo docker push mkashraf071/jenkin-dockerhub:$BUILD_NUMBER'           
-     echo 'Push Image Completed'       
-    }            
-}  
+       script {
+              docker.withRegistry( docker_hub_regisry, docker_hub_creds ) {
+                dockerImage.push("$BUILD_NUMBER")
+                dockerImage.push('latest')
+               }
+               }           
+             }   
+          }
 
   }
-}
 
+}
 
 
 
