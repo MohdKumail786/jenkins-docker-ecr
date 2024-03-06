@@ -9,7 +9,7 @@ pipeline {
     environment {
         registryCredential = 'ecr:us-east-1:awscreds'
         appRegistry = "905418477455.dkr.ecr.us-east-1.amazonaws.com/mkashraf071"
-        vprofileRegistry = "https://905418477455.dkr.ecr.us-east-1.amazonaws.com"
+        docker_ecr_registry = "https://905418477455.dkr.ecr.us-east-1.amazonaws.com"
     }
   stages {
     stage('Fetch code'){
@@ -62,7 +62,7 @@ pipeline {
     stage('Upload App Image') {
           steps{
             script {
-              docker.withRegistry( vprofileRegistry, registryCredential ) {
+              docker.withRegistry( docker_ecr_registry, registryCredential ) {
                 dockerImage.push("$BUILD_NUMBER")
                 dockerImage.push('latest')
               }
